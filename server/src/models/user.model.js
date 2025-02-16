@@ -17,6 +17,9 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    refreshToken: {
+      type: String,
+    },
   },
   { timestamps: true }
 )
@@ -32,8 +35,8 @@ userSchema.methods.comparePassword = async function (password) {
   return await bcrypt.compare(password, this.password)
 }
 
-userSchema.methods.generateAccessTotken = function () {
-  jwt.sign(
+userSchema.methods.generateAccessToken = function () {
+  return jwt.sign(
     { _id: this._id, email: this.email, name: this.name },
     process.env.ACCESS_TOKEN_SECRET,
     {
@@ -42,8 +45,8 @@ userSchema.methods.generateAccessTotken = function () {
   )
 }
 
-userSchema.methods.generateAccessTotken = function () {
-  jwt.sign({ _id: this._id }, process.env.REFRESH_TOKEN_SECRET, {
+userSchema.methods.generateRefreshToken = function () {
+  return jwt.sign({ _id: this._id }, process.env.REFRESH_TOKEN_SECRET, {
     expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
   })
 }
