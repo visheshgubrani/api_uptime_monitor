@@ -160,12 +160,48 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new ApiError(401, error?.message || 'Invalid refresh token')
   }
 })
-/* getProfile	Fetch user details (name, email, etc.).
-updateProfile	Allow user to update profile details (e.g., name, email).
+
+const getProfile = asyncHandler(async (req, res) => {
+  const user = req.user?._id
+  const userProfile = await User.findById(user).select(
+    '-password -refreshToken'
+  )
+  if (!userProfile) {
+    throw new ApiError(400, 'User not found')
+  }
+  res
+    .status(200)
+    .json(new ApiResponse(200, 'User fetched successfully', userProfile))
+})
+
+const updateProfile = asyncHandler(async (req, res) => {
+  const { name, email } = req.body
+  if (!(name || email)) {
+    throw new ApiError(400, 'Please enter the details')
+  }
+  const user = await User.findById(req.user?._id)
+  if (!user) {
+    throw new ApiError(404, 'User not found')
+  }
+  const updatedProfile = await user.updateOne({ name: name, email: email })
+  return res
+    .status(200)
+    .json(new ApiResponse(200, 'user updated successfully', updatedProfile))
+})
+
+/* 
 forgotPassword	Send reset token to email when user forgets password.
 resetPassword	Verify reset token and allow user to set a new password.
 deleteAccount	Let user permanently delete their account.
 getAllUsers (Admin)	Fetch all users (for an admin panel).
 toggle2FA	Enable/disable two-factor authentication (optional).*/
 
-export { createUser, loginUser, logoutUser, changePassword }
+export {
+  createUser,
+  loginUser,
+  logoutUser,
+  changePassword,
+  refreshAccessToken,
+  getProfile,
+  updateProfile,
+}
